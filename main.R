@@ -47,8 +47,8 @@ custo
 # Item d)
 
 # Resposta ao item d)
-gradJ <- grad(matrix(c(treinamento$x1.obs, treinamento$x2.obs), ncol = 2), rep(0.1, 9), treinamento$y)
-gradJ
+gradJ_treino <- grad(matrix(c(treinamento$x1.obs, treinamento$x2.obs), ncol = 2), rep(0.1, 9), treinamento$y)
+gradJ_treino
 
 
 # Itemd e)
@@ -122,3 +122,26 @@ YxYhat <- ggplot(teste_final, aes(x=yhat, y=y)) +
   xlab(TeX("$\\hat{y}$")) + ylab(TeX("y"))
 
 YxYhat + ggsave("YxYhat.png")
+
+
+# Item i)
+
+k <- 300
+dJdw1 <- data.frame(matrix(ncol = 2, nrow = k))
+names(dJdw1) <- c("k", "Derivada")
+for (i in 1:k) {
+  amostra <- dados[1:i,]
+  gradiente <- grad(matrix(c(amostra$x1.obs, amostra$x2.obs), ncol = 2), theta = rep(0.1,9), amostra$y)
+  dJdw1[i,] <- c(i, gradiente[1])
+}
+dJdw1 <- as_tibble(dJdw1)
+
+grad_xk <- ggplot(data = dJdw1, aes(x=k, y=Derivada)) +
+  geom_line(color="white") +
+  geom_hline(aes(yintercept = gradJ_treino[1]), color="red") +
+  annotate(x=255, y=-0.07, label=TeX("J_{w_1} = -0.170096"),
+           geom = "text", angle = 0, vjust = 1, hjust=-0.1, size = 3.5)+
+  theme_dark() +
+  xlab("k amostra(s)") + ylab(TeX("J_{w_1}"))
+
+grad_xk + ggsave("GradW1xK.png")
