@@ -115,3 +115,10 @@ grafico_res <- ggplot(teste_final, aes(x=x1, y=x2)) +
 grafico_res + ggsave("Residuos.png")
 
 
+# Item h)
+
+YxYhat <- ggplot(teste_final, aes(x=yhat, y=y)) +
+  geom_point() +
+  xlab(TeX("$\\hat{y}$")) + ylab(TeX("y"))
+
+YxYhat + ggsave("YxYhat.png")
