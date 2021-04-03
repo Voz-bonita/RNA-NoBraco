@@ -6,6 +6,7 @@
 library(dplyr)
 library(ggplot2)
 library(reshape2)
+library(latex2exp)
 
 set.seed(2.2020)
 m.obs <- 100000
@@ -74,11 +75,47 @@ grad_desc.teste[index, 1:9]
 
 grad_desc.normal <- grad_desc(treinamento, teste, indexes = c(1,2,4), lr = 0.1, theta = rep(0, 9), iterations = 100)
 
-grad_desc.normal <- as_tibble(melt(grad_desc.normal, id.vars=c("Iteracao","w1","w2","w3","w4","w5","w6","b1","b2","b3")))
-names(grad_desc.normal)[11:12] <- c("Banco", "Custo")
+grad_desc.graph <- as_tibble(melt(grad_desc.normal, id.vars=c("Iteracao","w1","w2","w3","w4","w5","w6","b1","b2","b3")))
+names(grad_desc.graph)[11:12] <- c("Banco", "Custo")
 
-ggplot(data = grad_desc.normal, aes(x=Iteracao, y=Custo, col=Banco)) +
+ggplot(data = grad_desc.graph, aes(x=Iteracao, y=Custo, col=Banco)) +
   geom_line(size=1.5) +
   labs(x = "Iteracao",
        y = "MSE") +
+  scale_color_discrete(labels = c("Treino", "Teste")) +
   ggsave("Gradient_desc.png")
+
+# Item g)
+
+index <- which(grad_desc.normal$`MSE-validation` == min(grad_desc.normal$`MSE-validation`))
+pesos_otimos <- unlist(grad_desc.normal[index,2:10])
+
+teste_otimizado <- prediction(teste$x1.obs, teste$x2.obs, theta = pesos_otimos)
+residuos <- teste$y - teste_otimizado$yhat
+
+teste_final <- tibble(
+  x1 = teste$x1.obs,
+  x2 = teste$x2.obs,
+  y = teste$y,
+  yhat = teste_otimizado$yhat,
+  residuos = residuos
+)
+
+grafico_base <- ggplot(teste_final, aes(x=x1, y=x2)) +
+  coord_cartesian(expand=F) +
+  theme_dark() +
+  xlab(TeX("X_1")) + ylab(TeX("X_2"))
+
+grafico_base +
+  geom_point(aes(colour=residuos), size=2, shape=15) +
+  scale_colour_gradient(low="springgreen",
+                        high="red",
+                        name=TeX("Redisuos|(X_1, X_2)")) +
+  ggsave("Residuos.png")
+
+grafico_base +
+  geom_point(aes(colour=yhat), size=2, shape=15) +
+  scale_colour_gradient(low="springgreen",
+                        high="red",
+                        name=TeX("$f(X_1,X_2\\;|\\;\\theta\\;)$")) +
+  ggsave("Previsoes.png")
