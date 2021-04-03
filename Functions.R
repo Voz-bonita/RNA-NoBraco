@@ -131,7 +131,7 @@ grad_desc <- function(train_db, validation_db = FALSE, indexes, lr = 0.1, theta,
         train_cost.n <- MSE(train_db[,y.col], train_db_pred.n$yhat)
         validation_cost.n <- MSE(validation_db[,y.col], validation_db_pred.n$yhat)
 
-        grad_custo[n,] <- c(n, theta, sum(train_cost.n), sum(validation_cost.n))
+        grad_custo[n,] <- c(n-1, theta, sum(train_cost.n), sum(validation_cost.n))
     }
     returnValue(as_tibble(grad_custo))
 
