@@ -103,23 +103,15 @@ teste_final <- tibble(
   residuos = residuos
 )
 
-grafico_base <- ggplot(teste_final, aes(x=x1, y=x2)) +
+grafico_res <- ggplot(teste_final, aes(x=x1, y=x2)) +
   coord_cartesian(expand=F) +
-  theme_dark() +
-  xlab(TeX("X_1")) + ylab(TeX("X_2"))
-
-grafico_res <- grafico_base +
   geom_point(aes(colour=residuos), size=2, shape=15) +
   scale_colour_gradient(low="springgreen",
                         high="red",
-                        name=TeX("Redisuos|(X_1, X_2)"))
+                        name=TeX("Redisuos|(Y, \\hat{Y})")) +
+  theme_dark() +
+  xlab(TeX("X_1")) + ylab(TeX("X_2"))
 
 grafico_res + ggsave("Residuos.png")
 
-grafico_pred <- grafico_base +
-  geom_point(aes(colour=yhat), size=2, shape=15) +
-  scale_colour_gradient(low="springgreen",
-                        high="red",
-                        name=TeX("$f(X_1,X_2\\;|\\;\\theta\\;)$"))
 
-grafico_pred + ggsave("Previsoes.png")
