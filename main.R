@@ -4,6 +4,8 @@
 # Created on: 15/03/2021
 
 library(dplyr)
+library(ggplot2)
+library(reshape2)
 
 set.seed(2.2020)
 m.obs <- 100000
@@ -71,3 +73,12 @@ grad_desc.teste[index, 1:9]
 # Item f)
 
 grad_desc.normal <- grad_desc(treinamento, teste, indexes = c(1,2,4), lr = 0.1, theta = rep(0, 9), iterations = 100)
+
+grad_desc.normal <- as_tibble(melt(grad_desc.normal, id.vars=c("Iteracao","w1","w2","w3","w4","w5","w6","b1","b2","b3")))
+names(grad_desc.normal)[11:12] <- c("Banco", "Custo")
+
+ggplot(data = grad_desc.normal, aes(x=Iteracao, y=Custo, col=Banco)) +
+  geom_line(size=1.5) +
+  labs(x = "Iteracao",
+       y = "MSE") +
+  ggsave("Gradient_desc.png")

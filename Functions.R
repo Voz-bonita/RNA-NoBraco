@@ -112,10 +112,10 @@ grad_desc <- function(train_db, validation_db = FALSE, indexes, lr = 0.1, theta,
 
     # Guarda-se o primeiro custo na linha "0", por isso sao iteracaoes+1 linhas de observacoes e nao iteracoes linhas
     grad_custo <- data.frame(
-       matrix(ncol = 11, nrow = iterations+1)
+       matrix(ncol = 12, nrow = iterations+1)
     )
-    grad_custo[1,] <- c(theta, sum(cost.train.0), sum(cost.validation.0))
-    names(grad_custo) <- c("w1","w2","w3","w4","w5","w6","b1","b2","b3","MSE-train","MSE-validation")
+    grad_custo[1,] <- c(0, theta, sum(cost.train.0), sum(cost.validation.0))
+    names(grad_custo) <- c("Iteracao","w1","w2","w3","w4","w5","w6","b1","b2","b3","MSE-train","MSE-validation")
 
 
     for (n in 2:(iterations+1)) {
@@ -131,7 +131,7 @@ grad_desc <- function(train_db, validation_db = FALSE, indexes, lr = 0.1, theta,
         train_cost.n <- MSE(train_db[,y.col], train_db_pred.n$yhat)
         validation_cost.n <- MSE(validation_db[,y.col], validation_db_pred.n$yhat)
 
-        grad_custo[n,] <- c(theta, sum(train_cost.n), sum(validation_cost.n))
+        grad_custo[n,] <- c(n, theta, sum(train_cost.n), sum(validation_cost.n))
     }
     returnValue(as_tibble(grad_custo))
 
