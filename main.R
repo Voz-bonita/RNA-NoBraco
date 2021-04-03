@@ -48,41 +48,26 @@ gradJ <- grad(matrix(c(treinamento$x1.obs, treinamento$x2.obs), ncol = 2), rep(0
 gradJ
 
 
-# Itens e) & f)
+# Itemd e)
 
-# Novo theta fornecido
-theta.n <- rep(0, 9)
+# A funcao grad_desc foi definida para otimizar os pesos sobre o conjunto de treino
+# Trata-se entao de verificar a descida de gradiente utilizando como base o conjunto de teste no lugar do de treino
+grad_desc.teste <- grad_desc(teste, indexes = c(1,2,4), lr = 0.1, theta = rep(0, 9), iterations = 100)
 
+# Resposta ao item e)
 
-# Em preparativo para o item f) guarda-se os dados do custo desde o primeiro theta
-treinamento_pred.0 <- prediction(treinamento$x1.obs, treinamento$x2.obs, theta.n)
-teste_pred.0 <- prediction(teste$x1.obs, teste$x2.obs, theta.n)
+# Menor custo obtido durante a descida de gradiente
+# Vale lembrar que o conjunto de teste foi utilizado como base
+# Por isso mesmo pede-se a coluna `MSE-train`, pois o conjunto de teste esta no lugar do conjunto de treino
+min(grad_desc.teste$`MSE-train`)
 
-custo.trein.0 <- MSE(treinamento$y, treinamento_pred.0$yhat)
-custo.teste.0 <- MSE(teste$y, teste_pred.0$yhat)
+# Iteracao da ocorrencia
+index <- which(grad_desc.teste$`MSE-train` == min(grad_desc.teste$`MSE-train`))
+index
 
+# Vetor de pesos estimado
+grad_desc.teste[index, 1:9]
 
-# Guarda-se o primeiro custo na linha "0", por isso sao 101 linhas de observacoes e nao 100
-grad_custo <- data.frame(
-   matrix(ncol = 11, nrow = 101)
-)
-grad_custo[1,] <- c(theta.n, sum(custo.trein.0), sum(custo.teste.0))
-names(grad_custo) <- c("w1","w2","w3","w4","w5","w6","b1","b2","b3","MSE-treino","MSE-teste")
+# Item f)
 
-
-# Definido o Learning Rate, pode-se calcular a descida de gradiente
-lr <- 0.1
-for (n in 2:101) {
-    gradJ.n <- grad(matrix(c(treinamento$x1.obs, treinamento$x2.obs), ncol = 2), theta.n, treinamento$y)
-    theta.n <- theta.n - lr*gradJ.n
-
-    treinamento_pred.n <- prediction(treinamento$x1.obs, treinamento$x2.obs, theta.n)
-    teste_pred.n <- prediction(teste$x1.obs, teste$x2.obs, theta.n)
-
-    custo.trein.n <- MSE(treinamento$y, treinamento_pred.n$yhat)
-    custo.teste.n <- MSE(teste$y, teste_pred.n$yhat)
-
-    grad_custo[n,] <- c(theta.n, sum(custo.trein.n), sum(custo.teste.n))
-
-}
-grad_custo <- as_tibble(grad_custo)
+grad_desc.normal <- grad_desc(treinamento, teste, indexes = c(1,2,4), lr = 0.1, theta = rep(0, 9), iterations = 100)

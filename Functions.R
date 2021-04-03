@@ -83,3 +83,56 @@ grad <- function(X, theta, y) {
     nabla <- c(dJdW1, dJdW2, dJdW3, dJdW4, dJdW5, dJdW6, dJdB1, dJdB2, dJdB3)
     return(nabla)
 }
+
+
+# Itens e) & f)
+
+grad_desc <- function(train_db, validation_db = FALSE, indexes, lr = 0.1, theta, iterations) {
+
+    train_db <- as.data.frame(train_db)
+    # Um conjunto de validacao nao e estritamente necessario
+    # Se nao for desejado, entao sera um data frame vazio que permite a descida de gradiente no conjunto de treino
+    if (is.logical(validation_db)) {
+        validation_db <- data.frame(matrix(ncol = ncol(train_db), nrow = nrow(train_db)))
+    }
+    validation_db <- as.data.frame(validation_db)
+
+    # Usuario deve informar em quais colunas do banco se encontram os inputs e o valor esperado
+    x1.col <- indexes[[1]]
+    x2.col <- indexes[[2]]
+    y.col <- indexes[[3]]
+
+
+    train_db_pred <- prediction(train_db[,x1.col], train_db[,x2.col], theta)
+    validation_db_pred <- prediction(validation_db[,x1.col], validation_db[,x2.col], theta)
+
+    cost.train.0 <- MSE(train_db[,y.col], train_db_pred$yhat)
+    cost.validation.0 <- MSE(unlist(validation_db[,y.col]), validation_db_pred$yhat)
+
+
+    # Guarda-se o primeiro custo na linha "0", por isso sao iteracaoes+1 linhas de observacoes e nao iteracoes linhas
+    grad_custo <- data.frame(
+       matrix(ncol = 11, nrow = iterations+1)
+    )
+    grad_custo[1,] <- c(theta, sum(cost.train.0), sum(cost.validation.0))
+    names(grad_custo) <- c("w1","w2","w3","w4","w5","w6","b1","b2","b3","MSE-train","MSE-validation")
+
+
+    for (n in 2:(iterations+1)) {
+        # Calcula-se o n-esimo gradiente sobre o conjunto de treino
+        # E em seguida o n-esimo theta
+        gradJ.n <- grad(matrix(c(train_db[,x1.col], train_db[,x2.col]), ncol = 2), theta, train_db$y)
+        theta <- theta - lr*gradJ.n
+
+        # Calculam-se a n-esimas previsoes e seus custos
+        train_db_pred.n <- prediction(train_db[,x1.col], train_db[,x2.col], theta)
+        validation_db_pred.n <- prediction(validation_db[,x1.col], validation_db[,x2.col], theta)
+
+        train_cost.n <- MSE(train_db[,y.col], train_db_pred.n$yhat)
+        validation_cost.n <- MSE(validation_db[,y.col], validation_db_pred.n$yhat)
+
+        grad_custo[n,] <- c(theta, sum(train_cost.n), sum(validation_cost.n))
+    }
+    returnValue(as_tibble(grad_custo))
+
+}
