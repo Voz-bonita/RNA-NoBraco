@@ -79,7 +79,7 @@ grad_desc.graph <- as_tibble(melt(grad_desc.normal, id.vars=c("Iteracao","w1","w
 names(grad_desc.graph)[11:12] <- c("Banco", "Custo")
 
 ggplot(data = grad_desc.graph, aes(x=Iteracao, y=Custo, col=Banco)) +
-  geom_line(size=1.5) +
+  geom_line(size=3.0) +
   labs(x = "Iteracao",
        y = "MSE") +
   scale_color_discrete(labels = c("Treino", "Teste")) +
@@ -93,6 +93,8 @@ pesos_otimos <- unlist(grad_desc.normal[index,2:10])
 teste_otimizado <- prediction(teste$x1.obs, teste$x2.obs, theta = pesos_otimos)
 residuos <- teste$y - teste_otimizado$yhat
 
+
+# Conjunto de teste contendo valores iniciais e previsoes pos otimizacao
 teste_final <- tibble(
   x1 = teste$x1.obs,
   x2 = teste$x2.obs,
@@ -106,16 +108,18 @@ grafico_base <- ggplot(teste_final, aes(x=x1, y=x2)) +
   theme_dark() +
   xlab(TeX("X_1")) + ylab(TeX("X_2"))
 
-grafico_base +
+grafico_res <- grafico_base +
   geom_point(aes(colour=residuos), size=2, shape=15) +
   scale_colour_gradient(low="springgreen",
                         high="red",
-                        name=TeX("Redisuos|(X_1, X_2)")) +
-  ggsave("Residuos.png")
+                        name=TeX("Redisuos|(X_1, X_2)"))
 
-grafico_base +
+grafico_res + ggsave("Residuos.png")
+
+grafico_pred <- grafico_base +
   geom_point(aes(colour=yhat), size=2, shape=15) +
   scale_colour_gradient(low="springgreen",
                         high="red",
-                        name=TeX("$f(X_1,X_2\\;|\\;\\theta\\;)$")) +
-  ggsave("Previsoes.png")
+                        name=TeX("$f(X_1,X_2\\;|\\;\\theta\\;)$"))
+
+grafico_pred + ggsave("Previsoes.png")
