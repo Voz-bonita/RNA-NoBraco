@@ -7,6 +7,7 @@ library(dplyr)
 library(ggplot2)
 library(reshape2)
 library(latex2exp)
+library(microbenchmark)
 
 set.seed(2.2020)
 m.obs <- 100000
@@ -145,3 +146,10 @@ grad_xk <- ggplot(data = dJdw1, aes(x=k, y=Derivada)) +
   xlab("k amostra(s)") + ylab(TeX("J_{w_1}"))
 
 grad_xk + ggsave("GradW1xK.png")
+
+# Note que a amostra de tamanho 100000 trata-se do proprio banco original
+amostra_300 <- dados[1:300,]
+
+benchmark <- microbenchmark(grad(matrix(c(amostra_300$x1.obs, amostra_300$x2.obs), ncol = 2), theta = rep(0.1,9), amostra_300$y),
+                            grad(matrix(c(dados$x1.obs, dados$x2.obs), ncol = 2), theta = rep(0.1,9), dados$y))
+benchmark
