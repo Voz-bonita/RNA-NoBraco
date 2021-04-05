@@ -136,3 +136,32 @@ grad_desc <- function(train_db, validation_db = FALSE, indexes, lr = 0.1, theta,
     returnValue(as_tibble(grad_custo))
 
 }
+
+
+# Item j)
+
+# Denotando por beta_1 o vetor dos coeficientes beta sem o intercepto
+# Note que o vetor beta_1 deve estar ordenado pelo indice do coeficiente
+
+linear1 <- function(x1, x2, beta0, beta_1) {
+    warning("O primeiro elemento do vetor beta_1 deve ser o termo Beta1.\n",
+            "Se ja estiver fazendo uso correto da funcao, ignore-me")
+
+    X <- matrix(c(x1, x2), ncol = 2)
+    yhat <- X %*% beta_1 + beta0
+    returnValue(yhat)
+}
+
+
+linear2 <- function(x1, x2, beta0, beta_1) {
+    warning("O primeiro elemento do vetor beta_1 deve ser o termo Beta1.\n",
+            "O segundo elemento do vetor beta_1 deve ser o termo Beta2.\n",
+            "E assim sucessivamente... Se ja estiver fazendo uso correto da funcao, ignore-me")
+
+    X <- matrix(c(x1, x2), ncol = 2)
+    Xsq <- matrix(c(x1^2, x2^2), ncol = 2)
+
+    yhat <- X %*% beta_1[1:2] + Xsq %*% beta_1[3:4] + beta_1[5]*x1*x2 + beta0
+    returnValue(yhat)
+
+}

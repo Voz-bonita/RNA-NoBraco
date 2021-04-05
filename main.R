@@ -153,3 +153,34 @@ amostra_300 <- dados[1:300,]
 benchmark <- microbenchmark(grad(matrix(c(amostra_300$x1.obs, amostra_300$x2.obs), ncol = 2), theta = rep(0.1,9), amostra_300$y),
                             grad(matrix(c(dados$x1.obs, dados$x2.obs), ncol = 2), theta = rep(0.1,9), dados$y))
 benchmark
+
+# Item j)
+
+mod.lm1 <- lm(y ~ 1 + x1.obs + x2.obs, data = treinamento)
+betas_mod1 <- mod.lm1$coefficients
+names(betas_mod1) <- c("B0", "B1", "B2")
+
+# A funçaoo lm juntaria os argumentos semelhantes para calcular os coeficientes
+# A alternativa encontrada foi criar artifialmente covariáveis quadráticas
+treinamento_especial <- treinamento %>%
+  mutate(x1sq = x1.obs^2,
+         x2sq = x2.obs^2)
+mod.lm2 <- lm(y ~ 1 + 1*x1.obs + x2.obs + x1sq + x2sq + x1.obs*x2.obs, data = treinamento_especial)
+
+# Aqui e necessario cuidado ao mudar os nomes do coeficientes
+# Os coeficientes nao aparecem necessariamente na ordem da formula
+betas_mod2 <- mod.lm2$coefficients
+names(betas_mod2) <- c("B0", "B2", "B3", "B4", "B1", "B5")
+
+
+# Custo no banco de teste
+mod.lm1_pred <- linear1(teste$x1.obs, teste$x2.obs, betas_mod1[["B0"]], unname(betas_mod1[c("B1","B2")]))
+custo.lm1 <- sum(MSE(teste$y, mod.lm1_pred))
+
+mod.lm2_pred <- linear2(teste$x1.obs, teste$x2.obs, betas_mod2[["B0"]], unname(betas_mod2[c("B1","B2","B3","B4","B5")]))
+custo.lm2 <- sum(MSE(teste$y, mod.lm2_pred))
+
+
+custo.lm1
+custo.lm2
+min(grad_desc.normal$`MSE-train`)
