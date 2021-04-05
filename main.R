@@ -9,6 +9,10 @@ library(reshape2)
 library(latex2exp)
 library(microbenchmark)
 
+# Carrega todas as funcoes customizadas utilizadas nesse script
+source("Functions.R")
+
+
 set.seed(2.2020)
 m.obs <- 100000
 dados <- tibble(
@@ -17,9 +21,6 @@ dados <- tibble(
     mutate(mu=abs(x1.obs^3 - 30*sin(x2.obs) + 10),
     y=rnorm(m.obs, mean=mu, sd=1))
 
-
-# Carrega todas as funcoes customizadas utilizadas nesse script
-source("Functions.R")
 
 # Item a)
 
@@ -56,13 +57,17 @@ gradJ_treino
 
 # A funcao grad_desc foi definida para otimizar os pesos sobre o conjunto de treino
 # Trata-se entao de verificar a descida de gradiente utilizando como base o conjunto de teste no lugar do de treino
-grad_desc.teste <- grad_desc(teste, indexes = c(1,2,4), lr = 0.1, theta = rep(0, 9), iterations = 100)
+grad_desc.teste <- grad_desc(teste,
+                             indexes = c(1,2,4),
+                             lr = 0.1,
+                             theta = rep(0, 9),
+                             epochs = 100)
 
 # Resposta ao item e)
 
 # Menor custo obtido durante a descida de gradiente
 # Vale lembrar que o conjunto de teste foi utilizado como base
-# Por isso mesmo pede-se a coluna `MSE-train`, pois o conjunto de teste esta no lugar do conjunto de treino
+# Por isso mesmo pede-se a coluna "MSE-train", pois o conjunto de teste esta no lugar do conjunto de treino
 min(grad_desc.teste$`MSE-train`)
 
 # Iteracao da ocorrencia
@@ -70,27 +75,32 @@ index <- which(grad_desc.teste$`MSE-train` == min(grad_desc.teste$`MSE-train`))
 index
 
 # Vetor de pesos estimado
-grad_desc.teste[index, 1:9]
+grad_desc.teste[index, 2:10]
 
 
 # Item f)
 
-grad_desc.normal <- grad_desc(treinamento, teste, indexes = c(1,2,4), lr = 0.1, theta = rep(0, 9), iterations = 100)
+grad_desc.normal <- grad_desc(treinamento, teste,
+                              indexes = c(1,2,4),
+                              lr = 0.1,
+                              theta = rep(0, 9),
+                              epochs = 100)
 
-grad_desc.graph <- as_tibble(melt(grad_desc.normal, id.vars=c("Iteracao","w1","w2","w3","w4","w5","w6","b1","b2","b3")))
-names(grad_desc.graph)[11:12] <- c("Banco", "Custo")
+# Alteracoes na forma de armazenar os dados da descida de gradiente para facilitar o seu grafico
+grad_desc.v.graph <- as_tibble(melt(grad_desc.normal, id.vars=c("Iteracao","w1","w2","w3","w4","w5","w6","b1","b2","b3")))
+names(grad_desc.v.graph)[11:12] <- c("Banco", "Custo")
 
-ggplot(data = grad_desc.graph, aes(x=Iteracao, y=Custo, col=Banco)) +
+grad_desc.graph <- ggplot(data = grad_desc.v.graph, aes(x=Iteracao, y=Custo, col=Banco)) +
   geom_line(size=3.0) +
   labs(x = "Iteracao",
        y = "MSE") +
-  scale_color_discrete(labels = c("Treino", "Teste")) +
-  ggsave("Gradient_desc.png")
+  scale_color_discrete(labels = c("Treino", "Teste"))
 
+# grad_desc.graph + ggsave("Gradient_desc.png")
 
 # Item g)
 
-# Toma-se o melhor vetor de pesos obtido
+# Toma-se o melhor vetor de pesos obtido para calcular a predicao
 index <- which(grad_desc.normal$`MSE-validation` == min(grad_desc.normal$`MSE-validation`))
 pesos_otimos <- unlist(grad_desc.normal[index,2:10])
 
@@ -107,6 +117,7 @@ teste_final <- tibble(
   residuos = residuos
 )
 
+
 grafico_res <- ggplot(teste_final, aes(x=x1, y=x2)) +
   coord_cartesian(expand=F) +
   geom_point(aes(colour=residuos), size=2, shape=15) +
@@ -116,7 +127,7 @@ grafico_res <- ggplot(teste_final, aes(x=x1, y=x2)) +
   theme_dark() +
   xlab(TeX("X_1")) + ylab(TeX("X_2"))
 
-grafico_res + ggsave("Residuos.png")
+# grafico_res + ggsave("Residuos.png")
 
 
 # Item h)
@@ -125,20 +136,23 @@ YxYhat <- ggplot(teste_final, aes(x=yhat, y=y)) +
   geom_point() +
   xlab(TeX("$\\hat{y}$")) + ylab(TeX("y"))
 
-YxYhat + ggsave("YxYhat.png")
+# YxYhat + ggsave("YxYhat.png")
 
 
 # Item i)
 
 k <- 300
+
 dJdw1 <- data.frame(matrix(ncol = 2, nrow = k))
 names(dJdw1) <- c("k", "Derivada")
+
 for (i in 1:k) {
+  # Separa-se uma amostra de tamanho k em seguida obtem-se seu gradiente
   amostra <- dados[1:i,]
   gradiente <- grad(matrix(c(amostra$x1.obs, amostra$x2.obs), ncol = 2), theta = rep(0.1,9), amostra$y)
   dJdw1[i,] <- c(i, gradiente[1])
 }
-dJdw1 <- as_tibble(dJdw1)
+
 
 grad_xk <- ggplot(data = dJdw1, aes(x=k, y=Derivada)) +
   geom_line(color="white") +
@@ -148,7 +162,8 @@ grad_xk <- ggplot(data = dJdw1, aes(x=k, y=Derivada)) +
   theme_dark() +
   xlab("k amostra(s)") + ylab(TeX("J_{w_1}"))
 
-grad_xk + ggsave("GradW1xK.png")
+# grad_xk + ggsave("GradW1xK.png")
+
 
 # Note que a amostra de tamanho 100000 trata-se do proprio banco original
 amostra_300 <- dados[1:300,]
@@ -176,11 +191,18 @@ betas_mod2 <- mod.lm2$coefficients
 names(betas_mod2) <- c("B0", "B2", "B3", "B4", "B1", "B5")
 
 
-# Custo no banco de teste
-mod.lm1_pred <- linear1(teste$x1.obs, teste$x2.obs, betas_mod1[["B0"]], unname(betas_mod1[c("B1","B2")]))
+# Custo sobre o banco de teste
+mod.lm1_pred <- linear1(teste$x1.obs, teste$x2.obs,
+                        intercepto = betas_mod1[["B0"]],
+                        beta_1 = unname(betas_mod1[c("B1","B2")]))
+
 custo.lm1 <- sum(MSE(teste$y, mod.lm1_pred))
 
-mod.lm2_pred <- linear2(teste$x1.obs, teste$x2.obs, betas_mod2[["B0"]], unname(betas_mod2[c("B1","B2","B3","B4","B5")]))
+
+mod.lm2_pred <- linear2(teste$x1.obs, teste$x2.obs,
+                        intercepto = betas_mod2[["B0"]],
+                        beta_1 = unname(betas_mod2[c("B1","B2","B3","B4","B5")]))
+
 custo.lm2 <- sum(MSE(teste$y, mod.lm2_pred))
 
 
@@ -193,7 +215,9 @@ min(grad_desc.normal$`MSE-validation`)
 
 # Rede neural
 sigmahat <- sqrt(min(grad_desc.normal$`MSE-validation`))
-captura_obs(medias = teste_otimizado$yhat, sd = sigmahat, obs = teste$y)
+captura_obs(medias = teste_otimizado$yhat,
+            sd = sigmahat,
+            obs = teste$y)
 
 
 # Os modelos lineares foram treinados sobre o conjunto de treino
@@ -202,11 +226,15 @@ lm1.conf <- as_tibble(predict(mod.lm1, interval = "prediction"))
 ErroAmostral.lm1 <- mean(lm1.conf$fit - lm1.conf$lwr)
 sd.lm1 <- ErroAmostral.lm1/qnorm(0.975)
 
-captura_obs(medias = mod.lm1_pred, sd = sd.lm1, obs = teste$y)
+captura_obs(medias = mod.lm1_pred,
+            sd = sd.lm1,
+            obs = teste$y)
 
 
 lm2.conf <- as_tibble(predict(mod.lm2, interval = "prediction"))
 ErroAmostral.lm2 <- mean(lm2.conf$fit - lm2.conf$lwr)
 sd.lm2 <- ErroAmostral.lm2/qnorm(0.975)
 
-captura_obs(medias = mod.lm2_pred, sd = sd.lm2, obs = teste$y)
+captura_obs(medias = mod.lm2_pred,
+            sd = sd.lm2,
+            obs = teste$y)
