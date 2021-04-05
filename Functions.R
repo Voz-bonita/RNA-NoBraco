@@ -165,3 +165,24 @@ linear2 <- function(x1, x2, beta0, beta_1) {
     returnValue(yhat)
 
 }
+
+
+# Item l)
+
+captura_obs <- function(medias, sd, conf_lvl = 0.95, obs) {
+
+    conf_lateral_inf <- (1-conf_lvl)/2
+    erro <- sd*abs(qnorm(conf_lateral_inf))
+
+    lwr <- medias - erro
+    upr <- medias + erro
+
+    # Os intervalos de confianca estao em forma vetorial
+    # Para agilizar o processo vamos vetorizar a funcao between
+    between <- Vectorize(between)
+    contem <- between(obs, lwr, upr)
+
+    # Lembrando-se que nos niveis mais baixos da programacao 1 = TRUE e 0 = FALSE
+    media <- sum(contem)/length(contem)
+    returnValue(media)
+}

@@ -72,6 +72,7 @@ index
 # Vetor de pesos estimado
 grad_desc.teste[index, 1:9]
 
+
 # Item f)
 
 grad_desc.normal <- grad_desc(treinamento, teste, indexes = c(1,2,4), lr = 0.1, theta = rep(0, 9), iterations = 100)
@@ -86,8 +87,10 @@ ggplot(data = grad_desc.graph, aes(x=Iteracao, y=Custo, col=Banco)) +
   scale_color_discrete(labels = c("Treino", "Teste")) +
   ggsave("Gradient_desc.png")
 
+
 # Item g)
 
+# Toma-se o melhor vetor de pesos obtido
 index <- which(grad_desc.normal$`MSE-validation` == min(grad_desc.normal$`MSE-validation`))
 pesos_otimos <- unlist(grad_desc.normal[index,2:10])
 
@@ -160,8 +163,8 @@ mod.lm1 <- lm(y ~ 1 + x1.obs + x2.obs, data = treinamento)
 betas_mod1 <- mod.lm1$coefficients
 names(betas_mod1) <- c("B0", "B1", "B2")
 
-# A funçaoo lm juntaria os argumentos semelhantes para calcular os coeficientes
-# A alternativa encontrada foi criar artifialmente covariáveis quadráticas
+# A funcao lm juntaria os argumentos semelhantes para calcular os coeficientes
+# A alternativa encontrada foi criar artifialmente covariaveis quadraticas
 treinamento_especial <- treinamento %>%
   mutate(x1sq = x1.obs^2,
          x2sq = x2.obs^2)
@@ -184,3 +187,26 @@ custo.lm2 <- sum(MSE(teste$y, mod.lm2_pred))
 custo.lm1
 custo.lm2
 min(grad_desc.normal$`MSE-train`)
+
+
+# Item l)
+
+# Rede neural
+sigmahat <- sqrt(min(grad_desc.normal$`MSE-validation`))
+captura_obs(medias = teste_otimizado$yhat, sd = sigmahat, obs = teste$y)
+
+
+# Os modelos lineares foram treinados sobre o conjunto de treino
+# Vale observar seus erros amostrais para calcular os novos intervalos de confianca
+lm1.conf <- as_tibble(predict(mod.lm1, interval = "prediction"))
+ErroAmostral.lm1 <- mean(lm1.conf$fit - lm1.conf$lwr)
+sd.lm1 <- ErroAmostral.lm1/qnorm(0.975)
+
+captura_obs(medias = mod.lm1_pred, sd = sd.lm1, obs = teste$y)
+
+
+lm2.conf <- as_tibble(predict(mod.lm2, interval = "prediction"))
+ErroAmostral.lm2 <- mean(lm2.conf$fit - lm2.conf$lwr)
+sd.lm2 <- ErroAmostral.lm2/qnorm(0.975)
+
+captura_obs(medias = mod.lm2_pred, sd = sd.lm2, obs = teste$y)
