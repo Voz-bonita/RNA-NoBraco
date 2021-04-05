@@ -186,7 +186,7 @@ custo.lm2 <- sum(MSE(teste$y, mod.lm2_pred))
 
 custo.lm1
 custo.lm2
-min(grad_desc.normal$`MSE-train`)
+min(grad_desc.normal$`MSE-validation`)
 
 
 # Item l)
