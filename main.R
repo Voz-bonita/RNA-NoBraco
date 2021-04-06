@@ -10,6 +10,8 @@ library(latex2exp)
 library(microbenchmark)
 
 # Carrega todas as funcoes customizadas utilizadas nesse script
+# Essa linha de comando necessita que o arquivo
+# .R contendo as funcoes no mesmo diretorio
 source("Functions.R")
 
 
@@ -49,14 +51,19 @@ custo
 # Item d)
 
 # Resposta ao item d)
-gradJ_treino <- grad(matrix(c(treinamento$x1.obs, treinamento$x2.obs), ncol = 2), rep(0.1, 9), treinamento$y)
+gradJ_treino <- grad(matrix(c(treinamento$x1.obs,
+                              treinamento$x2.obs), ncol = 2),
+                     rep(0.1, 9),
+                     treinamento$y)
 gradJ_treino
 
 
 # Itemd e)
 
-# A funcao grad_desc foi definida para otimizar os pesos sobre o conjunto de treino
-# Trata-se entao de verificar a descida de gradiente utilizando como base o conjunto de teste no lugar do de treino
+# A funcao grad_desc foi definida para
+# otimizar os pesos sobre o conjunto de treino.
+# Trata-se entao de verificar a descida de gradiente
+# utilizando como base o conjunto de teste no lugar do de treino
 grad_desc.teste <- grad_desc(teste,
                              indexes = c(1,2,4),
                              lr = 0.1,
@@ -65,9 +72,10 @@ grad_desc.teste <- grad_desc(teste,
 
 # Resposta ao item e)
 
-# Menor custo obtido durante a descida de gradiente
-# Vale lembrar que o conjunto de teste foi utilizado como base
-# Por isso mesmo pede-se a coluna "MSE-train", pois o conjunto de teste esta no lugar do conjunto de treino
+# Menor custo obtido durante a descida de gradiente.
+# Vale lembrar que o conjunto de teste foi utilizado como base.
+# Por isso mesmo pede-se a coluna "MSE-train",
+# pois o conjunto de teste esta no lugar do conjunto de treino
 min(grad_desc.teste$`MSE-train`)
 
 # Iteracao da ocorrencia
@@ -86,25 +94,36 @@ grad_desc.normal <- grad_desc(treinamento, teste,
                               theta = rep(0, 9),
                               epochs = 100)
 
-# Alteracoes na forma de armazenar os dados da descida de gradiente para facilitar o seu grafico
-grad_desc.v.graph <- as_tibble(melt(grad_desc.normal, id.vars=c("Iteracao","w1","w2","w3","w4","w5","w6","b1","b2","b3")))
+# Alteracoes na forma de armazenar os dados
+# da descida de gradiente para facilitar o seu grafico.
+grad_desc.v.graph <- as_tibble(melt(grad_desc.normal,
+                                    id.vars=c("Iteracao",
+                                              "w1","w2","w3",
+                                              "w4","w5","w6",
+                                              "b1","b2","b3")))
 names(grad_desc.v.graph)[11:12] <- c("Banco", "Custo")
 
-grad_desc.graph <- ggplot(data = grad_desc.v.graph, aes(x=Iteracao, y=Custo, col=Banco)) +
+grad_desc.graph <- ggplot(data = grad_desc.v.graph,
+                          aes(x=Iteracao, y=Custo, col=Banco)) +
   geom_line(size=3.0) +
   labs(x = "Iteracao",
        y = "MSE") +
   scale_color_discrete(labels = c("Treino", "Teste"))
 
+# Linhas como a proxima servem para salvar o grafico e
+# por isso mesmo estao comentadas
 # grad_desc.graph + ggsave("Gradient_desc.png")
 
 # Item g)
 
 # Toma-se o melhor vetor de pesos obtido para calcular a predicao
-index <- which(grad_desc.normal$`MSE-validation` == min(grad_desc.normal$`MSE-validation`))
+MSE_teste <- grad_desc.normal$`MSE-validation`
+index <- which(MSE_teste == min(MSE_teste))
 pesos_otimos <- unlist(grad_desc.normal[index,2:10])
 
-teste_otimizado <- prediction(teste$x1.obs, teste$x2.obs, theta = pesos_otimos)
+teste_otimizado <- prediction(teste$x1.obs,
+                              teste$x2.obs,
+                              theta = pesos_otimos)
 residuos <- teste$y - teste_otimizado$yhat
 
 
@@ -149,7 +168,10 @@ names(dJdw1) <- c("k", "Derivada")
 for (i in 1:k) {
   # Separa-se uma amostra de tamanho k em seguida obtem-se seu gradiente
   amostra <- dados[1:i,]
-  gradiente <- grad(matrix(c(amostra$x1.obs, amostra$x2.obs), ncol = 2), theta = rep(0.1,9), amostra$y)
+  gradiente <- grad(matrix(c(amostra$x1.obs,
+                             amostra$x2.obs), ncol = 2),
+                    theta = rep(0.1,9),
+                    amostra$y)
   dJdw1[i,] <- c(i, gradiente[1])
 }
 
@@ -168,13 +190,20 @@ grad_xk <- ggplot(data = dJdw1, aes(x=k, y=Derivada)) +
 # Note que a amostra de tamanho 100000 trata-se do proprio banco original
 amostra_300 <- dados[1:300,]
 
-benchmark <- microbenchmark(grad(matrix(c(amostra_300$x1.obs, amostra_300$x2.obs), ncol = 2), theta = rep(0.1,9), amostra_300$y),
-                            grad(matrix(c(dados$x1.obs, dados$x2.obs), ncol = 2), theta = rep(0.1,9), dados$y))
+benchmark <- microbenchmark(grad(matrix(c(amostra_300$x1.obs,
+                                          amostra_300$x2.obs), ncol = 2),
+                                 theta = rep(0.1,9),
+                                 amostra_300$y),
+                            grad(matrix(c(dados$x1.obs,
+                                          dados$x2.obs), ncol = 2),
+                                 theta = rep(0.1,9),
+                                 dados$y))
 benchmark
 
 # Item j)
 
-mod.lm1 <- lm(y ~ 1 + x1.obs + x2.obs, data = treinamento)
+mod.lm1 <- lm(y ~ 1 + x1.obs + x2.obs,
+              data = treinamento)
 betas_mod1 <- mod.lm1$coefficients
 names(betas_mod1) <- c("B0", "B1", "B2")
 
@@ -183,7 +212,8 @@ names(betas_mod1) <- c("B0", "B1", "B2")
 treinamento_especial <- treinamento %>%
   mutate(x1sq = x1.obs^2,
          x2sq = x2.obs^2)
-mod.lm2 <- lm(y ~ 1 + 1*x1.obs + x2.obs + x1sq + x2sq + x1.obs*x2.obs, data = treinamento_especial)
+mod.lm2 <- lm(y ~ 1 + 1*x1.obs + x2.obs + x1sq + x2sq + x1.obs*x2.obs,
+              data = treinamento_especial)
 
 # Aqui e necessario cuidado ao mudar os nomes do coeficientes
 # Os coeficientes nao aparecem necessariamente na ordem da formula
