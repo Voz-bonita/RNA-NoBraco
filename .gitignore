@@ -1,8 +1,6 @@
 .idea
-Gradient_desc.png
-GradW1xK.png
-Previsoes.png
-Residuos.png
-YxYhat.png
 2x1-Dense.model
-Dados.csv
+Data/
+Images/
+logs/
+__pycache__
