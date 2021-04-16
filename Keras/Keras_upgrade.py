@@ -5,6 +5,7 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
 from Load_Data import X_treino, X_teste, y_treino, y_teste
 
+TenBoard = TensorBoard(log_dir="logs/dense-16x2")
 model = Sequential()
 
 model.add(Dense(16, activation="tanh", input_shape=X_treino.shape[1:]))
@@ -19,6 +20,6 @@ model.compile(loss="mse",
 model.fit(X_treino, y_treino,
           batch_size=64,
           epochs=100,
-          callbacks=[tensorboard],
+          callbacks=[TenBoard],
           validation_data=(X_teste, y_teste))
 
