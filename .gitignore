@@ -1,6 +1,6 @@
 .idea
-2x1-Dense.model
+Keras/2x1-Dense.model
 Data/
 Images/
-logs/
+Keras/logs/
 __pycache__
