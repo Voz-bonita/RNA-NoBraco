@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from tensorflow.keras.optimizers import SGD
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Activation
+from tensorflow.keras.layers import Dense
 
 # Os indices sao carregados como colunas, logo,
 # devem ser descartados
