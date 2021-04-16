@@ -268,3 +268,6 @@ sd.lm2 <- ErroAmostral.lm2/qnorm(0.975)
 captura_obs(medias = mod.lm2_pred,
             sd = sd.lm2,
             obs = teste$y)
+
+# Guardar os dados em .csv para uso do Keras
+# write.csv(as.data.frame(dados), "Dados.csv")
