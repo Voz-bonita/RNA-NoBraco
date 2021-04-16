@@ -1,21 +1,13 @@
 import pandas as pd
 import numpy as np
+import pickle
+from tensorflow.keras.callbacks import TensorBoard
 from tensorflow.keras.optimizers import SGD
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
+from Load_Data import X_treino, X_teste, y_treino, y_teste
 
-# Os indices sao carregados como colunas, logo,
-# devem ser descartados
-dados = pd.read_csv("Dados.csv")
-dados.drop(dados.columns[0], axis=1, inplace=True)
-
-# Input e respectivo valor observado
-divisor = 80000
-X_treino = np.array(dados[dados.columns[0:2]][:divisor])
-y_treino = np.array(dados[dados.columns[3]][:divisor])
-
-X_teste = np.array(dados[dados.columns[0:2]][divisor:])
-y_teste = np.array(dados[dados.columns[3]][divisor:])
+TenBoard = TensorBoard(log_dir="logs/dense-2x1")
 
 
 # Pesos e vieses fornecidos
@@ -25,8 +17,8 @@ W1_Beta1[0][1] = 0
 W1_Beta1[1][0] = 0
 
 W2_Beta3 = [np.empty(shape=(2, 1), dtype=np.float32), np.empty(shape=1, dtype=np.float32)]
-W1_Beta1[0][0] = 0
-W1_Beta1[1][0] = 0
+W2_Beta3[0][0] = 0
+W2_Beta3[1][0] = 0
 
 
 modelo = Sequential()
@@ -48,6 +40,7 @@ modelo.compile(loss="mse",
 modelo.fit(X_treino, y_treino,
            batch_size=len(X_treino),
            epochs=100,
-           validation_data=(X_teste, y_teste))
+           validation_data=(X_teste, y_teste),
+           callbacks=[TenBoard])
 
 modelo.save("2x1-Dense.model")
