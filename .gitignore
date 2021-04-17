@@ -4,3 +4,4 @@ Data/
 Images/
 Keras/logs/
 __pycache__
+Keras/.mdl_wts.hdf5
