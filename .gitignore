@@ -5,3 +5,5 @@ Images/
 Keras/logs/
 __pycache__
 Keras/.mdl_wts.hdf5
+Keras/CSV-TensorBoard
+Temp.R
