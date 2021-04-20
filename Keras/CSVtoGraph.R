@@ -1,6 +1,7 @@
 library(ggplot2)
 library(dplyr)
 library(reshape2)
+library(tibble)
 
 # Baixe o csv do TensorBoard e leia-os
 treino <- read.csv(paste0(getwd(), "/Keras/CSV-TensorBoard/run-Old-Dense-2x1_train-tag-epoch_loss.csv")) %>%
@@ -17,3 +18,29 @@ ggplot(data = EpochsXCusto) +
   guides(color = guide_legend(title = "Banco")) +
   ylab("MSE")
 # ggsave(paste0(getwd(),"/Images/Old_SGD.png"))
+
+
+Densemax3x4 <- tibble(Epochs = seq(1,100))
+for (layer in 1:3) {
+  layer <- as.character(layer)
+  for (neurons in c(1,2,4)) {
+    neurons <- as.character(neurons)
+    custo <- read.csv(paste0(getwd(),
+                             "/Keras/CSV-TensorBoard/run-Dense-",
+                             layer, "-",neurons,"_validation-tag-epoch_loss.csv"))$Value
+
+    # Quase nenhum vetor de custos tem 100 observacoes
+    n <- length(custo)
+    custo <- c(custo, rep(NA, 100-n))
+
+    Densemax3x4 <- add_column(Densemax3x4, custo, .name_repair = "minimal")
+  }
+}
+names(Densemax3x4)[2:10] <- c("D-1L-1N", "D-1L-2N", "D-1L-D4N", "D-2L-1N", "D-2L-2N", "D-2L-4N", "D-3L-1N", "D-3L-2N", "D-3L-4N")
+Densemax3x4 <- melt(Densemax3x4, id.vars = "Epochs")
+names(Densemax3x4)[2:3] <- c("Arquitetura", "Custo")
+
+ggplot(data = Densemax3x4) +
+  geom_line(aes(x = Epochs, y = Custo, color = Arquitetura), size = 1.1) +
+  ylim(0,200) + xlim(0,30)
+ggsave(paste0(getwd(),"/Images/Arq-Simples.png"))
