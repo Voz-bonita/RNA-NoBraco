@@ -1,6 +1,5 @@
-import numpy as np
 from tensorflow.keras.callbacks import TensorBoard, EarlyStopping
-from tensorflow.keras.optimizers import Adam, Nadam, Ftrl, SGD
+from tensorflow.keras.optimizers import SGD
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
 from Load_Data import X_treino, X_teste, y_treino, y_teste
