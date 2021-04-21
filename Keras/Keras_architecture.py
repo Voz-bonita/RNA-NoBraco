@@ -31,7 +31,7 @@ for neuron in neurons:
         model.add(Dense(1, activation="linear"))
 
         model.compile(loss="mse",
-                      optimizer=SGD(learning_rate=0.003))
+                      optimizer=SGD(learning_rate=0.01))
 
         model.fit(X_treino, y_treino,
                   batch_size=64,
