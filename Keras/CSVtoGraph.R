@@ -131,3 +131,11 @@ ArcD1 <- LR[c(1,4,7,10,13)] %>%
   rename("Arquitetura" = "variable", "Custo" = "value")
 pbase + geom_line(data = ArcD1, size = 1.3)
 # ggsave(paste0(getwd(), "/Images/Multi-lr-64N.png"))
+
+
+custo2x32 <- read.csv(paste0(getwd(),
+                         "/Keras/CSV-TensorBoard/run-Dense-2x32-lr-0.003_validation-tag-epoch_loss.csv"))$Value
+custo2x64 <- read.csv(paste0(getwd(),
+                         "/Keras/CSV-TensorBoard/run-Dense-2x64-lr-0.003_validation-tag-epoch_loss.csv"))$Value
+min(custo2x32)
+min(custo2x64)

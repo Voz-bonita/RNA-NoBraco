@@ -8,3 +8,5 @@ Keras/.mdl_wts.hdf5
 Keras/CSV-TensorBoard
 Temp.R
 Keras/Optim
+Keras/Dense-2x32-lr-0.003.melhor
+Keras/Dense-2x64-lr-0.003.melhor
