@@ -2,6 +2,8 @@ library(ggplot2)
 library(dplyr)
 library(reshape2)
 library(tibble)
+library(plotly)
+library(htmlwidgets)
 
 # Baixe o csv do TensorBoard e leia-os
 treino <- read.csv(paste0(getwd(), "/Keras/CSV-TensorBoard/run-Old-Dense-2x1_train-tag-epoch_loss.csv")) %>%
@@ -43,4 +45,39 @@ names(Densemax3x4)[2:3] <- c("Arquitetura", "Custo")
 ggplot(data = Densemax3x4) +
   geom_line(aes(x = Epochs, y = Custo, color = Arquitetura), size = 1.1) +
   ylim(0,200) + xlim(0,30)
-ggsave(paste0(getwd(),"/Images/Arq-Simples.png"))
+# ggsave(paste0(getwd(),"/Images/Arq-Simples.png"))
+
+
+Densemax2x64 <- tibble(Epochs = seq(1,100))
+for (layer in 1:3) {
+  layer <- as.character(layer)
+  for (neurons in c(16,32,64)) {
+    neurons <- as.character(neurons)
+    custo <- read.csv(paste0(getwd(),
+                             "/Keras/CSV-TensorBoard/run-Dense-",
+                             layer, "-",neurons,"_validation-tag-epoch_loss.csv"))$Value
+
+    n <- length(custo)
+    custo <- c(custo, rep(NA, 100-n))
+
+    Densemax2x64 <- add_column(Densemax2x64, custo, .name_repair = "minimal")
+  }
+}
+names(Densemax2x64)[2:9] <- c("D-1L-16N", "D-1L-32N", "D-1L-D64N", "D-2L-16N", "D-2L-32N", "D-2L-64N", "D-3L-16N", "D-3L-32N")
+Densemax2x64 <- melt(Densemax2x64, id.vars = "Epochs")
+names(Densemax2x64)[2:3] <- c("Arquitetura", "Custo")
+
+comp_plot <- ggplot(data = Densemax2x64) +
+  geom_line(aes(x = Epochs, y = Custo, color = Arquitetura), size = 1.1)
+
+comp_plot +
+  ylim(0,200) + xlim(0,90)
+ggsave(paste0(getwd(),"/Images/A2-Todas.png"))
+
+comp_plot +
+  ylim(195,200) + xlim(0,30)
+ggsave(paste0(getwd(),"/Images/A2-Sup.png"))
+
+comp_plot +
+  ylim(0,30) + xlim(0,90)
+ggsave(paste0(getwd(),"/Images/A2-Inf.png"))
