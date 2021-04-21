@@ -4,6 +4,8 @@ library(reshape2)
 library(tibble)
 library(plotly)
 library(htmlwidgets)
+library(purrr)
+library(ggpubr)
 
 # Baixe o csv do TensorBoard e leia-os
 treino <- read.csv(paste0(getwd(), "/Keras/CSV-TensorBoard/run-Old-Dense-2x1_train-tag-epoch_loss.csv")) %>%
@@ -72,12 +74,60 @@ comp_plot <- ggplot(data = Densemax2x64) +
 
 comp_plot +
   ylim(0,200) + xlim(0,90)
-ggsave(paste0(getwd(),"/Images/A2-Todas.png"))
+# ggsave(paste0(getwd(),"/Images/A2-Todas.png"))
 
 comp_plot +
   ylim(195,200) + xlim(0,30)
-ggsave(paste0(getwd(),"/Images/A2-Sup.png"))
+# ggsave(paste0(getwd(),"/Images/A2-Sup.png"))
 
 comp_plot +
   ylim(0,30) + xlim(0,90)
-ggsave(paste0(getwd(),"/Images/A2-Inf.png"))
+# ggsave(paste0(getwd(),"/Images/A2-Inf.png"))
+
+
+LR <- tibble(Epochs = seq(1,100))
+i <- 1
+for (lr in c(0.01, 0.03, 0.005, 0.001)) {
+  lr <- as.character(lr)
+
+  for (neurons in c(16,32,64)) {
+    neurons <- as.character(neurons)
+    custo <- read.csv(paste0(getwd(),
+                             "/Keras/CSV-TensorBoard/lr/run-Dense-1-",
+                             neurons,"-",lr,"_validation-tag-epoch_loss.csv"))$Value
+
+    n <- length(custo)
+    custo <- c(custo, rep(NA, 100-n))
+
+    LR <- add_column(LR, custo, .name_repair = "minimal")
+    i <- i + 1
+    names(LR)[i] <- paste0("D1-",neurons,"N-",lr,"lr")
+  }
+}
+
+Lrs <- list(LR0.01 = LR[1:4] %>%
+  melt(id.vars = "Epochs"),
+     LR0.03 = LR[c(1,5:7)] %>%
+  melt(id.vars = "Epochs"),
+     LR0.005 = LR[c(1,8:10)] %>%
+  melt(id.vars = "Epochs"),
+     LR0.001 = LR[c(1,11:13)] %>%
+  melt(id.vars = "Epochs"))
+
+Lrs <- map(Lrs, ~rename(.x, "Arquitetura" = "variable", "Custo" = "value"))
+
+pbase <- ggplot(NULL, aes(x=Epochs, y=Custo, color=Arquitetura)) +
+  ylim(0,10)
+
+p1 <- pbase + geom_line(data = Lrs[[1]], size = 1.3)
+p2 <- pbase + geom_line(data = Lrs[[2]], size = 1.3)
+p3 <- pbase + geom_line(data = Lrs[[3]], size = 1.3)
+p4 <- pbase + geom_line(data = Lrs[[4]], size = 1.3)
+ggarrange(p1,p2,p3,p4)
+# ggsave(paste0(getwd(), "/Images/Multi-lr.png"))
+
+ArcD1 <- LR[c(1,4,7,10,13)] %>%
+  melt(id.vars = "Epochs") %>%
+  rename("Arquitetura" = "variable", "Custo" = "value")
+pbase + geom_line(data = ArcD1, size = 1.3)
+# ggsave(paste0(getwd(), "/Images/Multi-lr-64N.png"))
