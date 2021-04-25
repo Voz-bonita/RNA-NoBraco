@@ -36,7 +36,7 @@ x.grid <- expand.grid(x1, x2)
 
 # Previsoes
 dados.grid.yhat <- read.csv(path_fix("/Keras/Dados-grid-pred.csv"), header = F) %>%
-  add_column(as_tibble(xgrid), .before = "V1") %>%
+  add_column(as_tibble(x.grid), .before = "V1") %>%
   add_column(rep("NN", nrow(x.grid))) %>%
   rename_all(~ c("x1", "x2", "mu", "origem"))
 
@@ -53,6 +53,7 @@ ggplot(dados.grid, aes(x=x1, y=x2)) +
   geom_point(aes(colour=mu), size=2, shape=15) +
   facet_wrap(~ origem) +
   coord_cartesian(expand=F) +
+  coord_fixed(ratio = 1) +
   scale_colour_gradient(low="white",
                         high="black",
                         name=TeX("E(Y|X_1, X_2)")) +
