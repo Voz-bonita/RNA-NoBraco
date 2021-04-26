@@ -11,15 +11,26 @@ dados <- tibble(
   mutate(mu=abs(x1.obs^3 - 30*sin(x2.obs) + 10),
          y=rnorm(m.obs, mean=mu, sd=1))
 
-treinamento <- dados[1:80000,]
-teste <- dados[-1:-80000,]
+corte <- 80000
+treinamento <- dados[1:corte,]
+teste <- dados[(corte+1):(nrow(dados)),]
 
 sigmoid <- function(x) {
   activation <- 1 / (1 + exp(-x))
   returnValue(activation)
 }
 
+MSE <- function (y, yhat) {
+  custo <-sum((y-yhat)^2)/length(y)
+  returnValue(custo)
+}
 
+ME <- function (y, yhat) {
+  custo <- (y-yhat)/length(y)
+  returnValue(custo)
+}
+
+# Forward_propagation com dropout
 forward_prop <- function(x, theta = rep(0.1, 9), dropout = rep(T, 4)) {
   ifelse(is.data.frame(x), x <- matrix(unlist(x), ncol = 2), x <- matrix(x, ncol = 2))
   n <- nrow(x)
@@ -28,7 +39,9 @@ forward_prop <- function(x, theta = rep(0.1, 9), dropout = rep(T, 4)) {
   B1 <- matrix(theta[7:8], ncol = 2, nrow = n)
   b3 <- last(theta)
 
-
+  ### Dropout acontecendo
+  ## Zerar os neuronios altera o back-propagation
+  ## Zeram-se os pesos
   if (!dropout[1]) W1[,1] <- 0
   if (!dropout[2]) W1[,2] <- 0
 
@@ -36,8 +49,8 @@ forward_prop <- function(x, theta = rep(0.1, 9), dropout = rep(T, 4)) {
   a <- x %*% t(W1) + B1
   h <- sigmoid(a)
 
-  if (!dropout[3]) {W2[1,] <- 0; B1[,1] <- 0}
-  if (!dropout[4]) {W2[2,] <- 0; B1[,2] <- 0}
+  if (!dropout[3]) {W2[1,] <- 0}
+  if (!dropout[4]) {W2[2,] <- 0}
 
   yhat <- h %*% W2 + b3
 
@@ -50,16 +63,6 @@ forward_prop <- function(x, theta = rep(0.1, 9), dropout = rep(T, 4)) {
   )
 
   returnValue(predict_df)
-}
-
-MSE <- function (y, yhat) {
-  custo <-sum((y-yhat)^2)/length(y)
-  returnValue(custo)
-}
-
-ME <- function (y, yhat) {
-  custo <- (y-yhat)/length(y)
-  returnValue(custo)
 }
 
 back_prop <- function(X, theta, y, dropout = rep(T, 4)) {
@@ -138,8 +141,6 @@ grad_desc <- function(X_treino, y_treino,
       melhor.peso <- theta
       melhor.epoch <- epoch
     }
-    print(theta)
-    print(val_cost.n)
   }
   melhor.modelo <- list(menor.train.cost, menor.val.cost, melhor.peso, melhor.epoch)
   names(melhor.modelo) <- c("MSE_treino", "MSE_val", "Theta", "Epoch")
@@ -195,6 +196,7 @@ familia_gen <- function(X, theta, n.previsoes, dropout.ratio = 0.6) {
   return(familia)
 }
 
+# Pesos obtidos no item anterior
 theta <- dropout_opt$Theta
 
 X_teste <- teste %>%
@@ -205,21 +207,34 @@ estimativa <- mean(familia)
 estimativa
 
 # (IC) Limite inferior e superior respectiva
-quantile(familia, 0.025)
-quantile(familia, 0.975)
+paste(quantile(familia, 0.025), quantile(familia, 0.975))
 
 
 # Item c)
 
-n.est <- nrow(X_teste)
-estimativas_treino <- numeric(n.est)
-for (i in 1:n.est) {
-  print(i)
-  familia <- familia_gen(X_teste[i,], theta, 200)
-  estimativa.pontual <- mean(familia)
-  estimativas_treino[i] <- estimativa.pontual
-}
-
+# n.est <- nrow(X_teste)
+# estimativas_treino <- numeric(n.est)
+# for (i in 1:n.est) {
+#   print(i)
+#   familia <- familia_gen(X_teste[i,], theta, 200)
+#   estimativa.pontual <- mean(familia)
+#   estimativas_treino[i] <- estimativa.pontual
+# }
+#
+# Salva as previsoes para nao precisar executar duas vezes
 # write.csv(estimativas_treino, "estimativas.csv")
 
 
+# Item d)
+
+WSIR <- function (X, theta, dropout.ratio) {
+  theta[1:8] <- theta[1:8]*dropout.ratio
+  previsao <- forward_prop(X, theta)$yhat
+  return(previsao)
+}
+
+previsao <- WSIR(X_teste, theta, 0.6)
+
+estimativas_c <- read.csv("estimativas.csv")
+MSE(teste$y, estimativas_c[,2])
+MSE(teste$y, previsao)
