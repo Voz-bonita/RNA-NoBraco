@@ -39,18 +39,17 @@ forward_prop <- function(x, theta = rep(0.1, 9), dropout = rep(T, 4)) {
   B1 <- matrix(theta[7:8], ncol = 2, nrow = n)
   b3 <- last(theta)
 
-  ### Dropout acontecendo
-  ## Zerar os neuronios altera o back-propagation
-  ## Zeram-se os pesos
-  if (!dropout[1]) W1[,1] <- 0
-  if (!dropout[2]) W1[,2] <- 0
+
+  if (!dropout[1]) x[,1] <- 0
+  if (!dropout[2]) x[,2] <- 0
 
 
   a <- x %*% t(W1) + B1
   h <- sigmoid(a)
 
-  if (!dropout[3]) {W2[1,] <- 0}
-  if (!dropout[4]) {W2[2,] <- 0}
+  if (!dropout[3]) h[,1] <- 0
+  if (!dropout[4]) h[,2] <- 0
+
 
   yhat <- h %*% W2 + b3
 
@@ -66,11 +65,15 @@ forward_prop <- function(x, theta = rep(0.1, 9), dropout = rep(T, 4)) {
 }
 
 back_prop <- function(X, theta, y, dropout = rep(T, 4)) {
+
   X <- matrix(X, ncol = 2)
   pred <- forward_prop(X, theta = theta, dropout = dropout)
 
+  if (!dropout[1]) X[,1] <- 0
+  if (!dropout[2]) X[,2] <- 0
 
   dCdY <- -2*ME(y, pred$yhat)
+
   dYdH1 <- theta[5]
   dYdH2 <- theta[6]
 
@@ -122,7 +125,7 @@ grad_desc <- function(X_treino, y_treino,
 
   for (epoch in 1:epochs) {
 
-    dropout <- rbinom(4,1,0.6)
+    dropout <- rbinom(4,1,dropout.ratio)
     gradJ <- back_prop(X = X_treino, theta = theta, y = y_treino, dropout = dropout)
 
     theta <- theta - lr*gradJ
@@ -156,7 +159,7 @@ dropout_opt <- grad_desc(c(treinamento$x1.obs, treinamento$x2.obs), treinamento$
                           lr = 0.1,
                           theta = rep(0, 9),
                           epochs = 100,
-                          dropout = 0.4)
+                          dropout = 0.6)
 
 
 # Item b)
@@ -206,8 +209,8 @@ familia <- familia_gen(X_teste[1,], theta, 200)
 estimativa <- mean(familia)
 estimativa
 
-# (IC) Limite inferior e superior respectiva
-paste(quantile(familia, 0.025), quantile(familia, 0.975))
+# (IC) Limite inferior e superior respectivamente
+paste(round(quantile(familia, 0.025),3), round(quantile(familia, 0.975),3))
 
 
 # Item c)
@@ -220,21 +223,18 @@ paste(quantile(familia, 0.025), quantile(familia, 0.975))
 #   estimativa.pontual <- mean(familia)
 #   estimativas_treino[i] <- estimativa.pontual
 # }
-#
+
 # Salva as previsoes para nao precisar executar duas vezes
 # write.csv(estimativas_treino, "estimativas.csv")
 
 
 # Item d)
 
-WSIR <- function (X, theta, dropout.ratio) {
-  theta[1:8] <- theta[1:8]*dropout.ratio
-  previsao <- forward_prop(X, theta)$yhat
-  return(previsao)
-}
-
-previsao <- WSIR(X_teste, theta, 0.6)
+dropout.ratio <- 0.6
+theta.copy <- theta
+theta.copy[1:6] <- theta.copy[1:6]*dropout.ratio
+previsao_wsir <- forward_prop(X_teste, theta.copy)$yhat
 
 estimativas_c <- read.csv("estimativas.csv")
 MSE(teste$y, estimativas_c[,2])
-MSE(teste$y, previsao)
+MSE(teste$y, previsao_wsir)
