@@ -162,6 +162,12 @@ dropout_opt <- grad_desc(c(treinamento$x1.obs, treinamento$x2.obs), treinamento$
                           dropout = 0.6)
 
 
+dropout_opt$MSE_treino
+dropout_opt$MSE_val
+dropout_opt$Epoch
+dropout_opt$Theta
+
+
 # Item b)
 
 familia_gen <- function(X, theta, n.previsoes, dropout.ratio = 0.6) {
