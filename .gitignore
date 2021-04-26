@@ -12,3 +12,5 @@ Keras/Dense-2x32-lr-0.003.melhor
 Keras/Dense-2x64-lr-0.003.melhor
 Keras/optim_predict.csv
 Keras/Dados-grid-pred.csv
+Keras/Temp.py
+estimativas.csv
