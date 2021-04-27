@@ -71,6 +71,7 @@ back_prop <- function(X, theta, y, dropout = rep(T, 4)) {
 
   if (!dropout[1]) X[,1] <- 0
   if (!dropout[2]) X[,2] <- 0
+  ### Note que o dropout na camada escondida acontece no forward propagation
 
   dCdY <- -2*ME(y, pred$yhat)
 
