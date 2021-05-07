@@ -35,7 +35,7 @@ ggplot(fbase_df) +
   geom_point(aes(x=minimo$x1, y=minimo$x2),
              size=2, color="red") +
   annotate("text", x=minimo$x1, y=minimo$x2 + 0.5,
-           label="Minimo Global", color="red") +
+           label="Minimo global", color="red") +
   theme(panel.grid=element_blank(),
         panel.background=element_rect(fill = "transparent",colour = NA),
         panel.border=element_blank(),
