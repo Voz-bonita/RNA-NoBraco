@@ -92,3 +92,7 @@ grad_desc2(1,1)
 grad_desc2(1,0)
 grad_desc2(x1 = -3, x2 = -3, lr = 0.1)
 
+
+#### d)
+
+grad_desc2(0, 5, lr = 0.01, epochs = 100)
