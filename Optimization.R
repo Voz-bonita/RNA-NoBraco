@@ -1,7 +1,7 @@
 library(pacman)
 p_load(ggplot2, dplyr, latex2exp)
 
-
+#### a)
 ## Funcao fornecida
 fbase <- function(x1,x2) {
   return(x1^4 + x2^4 + x1^2*x2 + x1*x2^2 - 20*x1^2 - 15*x2^2)
@@ -44,3 +44,51 @@ ggplot(fbase_df) +
   scale_x_continuous(breaks = seq(-5,5,5)) +
   scale_y_continuous(breaks = seq(-5,5,5)) +
   xlab(TeX("$X_1$")) + ylab(TeX("$X_2$"))
+
+
+#### c)
+
+grad_desc2 <- function(x1, x2, lr = 0.01, epochs = 10) {
+  x1 <- as.double(x1)
+  x2 <- as.double(x2)
+
+  if (x1 == 0 & x2 == 0) {
+    warning("O ponto inicial (0,0) zera o gradiente\n  impossibilitando a descida de gradiente.")
+  }
+
+  ## Valor inicial
+  y0 <- fbase(x1,x2)
+  menor <- y0
+  melhor_ponto <- c(x1,x2)
+
+  for (i in 1:epochs) {
+    # Gradiente
+    ddx1 <- 4*x1^3 + 2*x1*x2 + x2^2 - 40*x1
+    ddx2 <- 4*x2^3 + 2*x1*x2 + x1^2 - 30*x2
+
+    # Atualizacao das variaveis
+    x1 <- x1 - lr*ddx1
+    x2 <- x2 - lr*ddx2
+
+    # Atualizacao do valor minimo
+    yi <- fbase(x1,x2)
+    if (is.nan(yi)) {
+      warning("A funcao divergiu e o treinamento foi interrompido")
+      break
+    } else if (yi < menor) {
+      menor <- yi
+      melhor_ponto <- c(x1,x2)
+    }
+  }
+
+  melhor_resultado <- c("f(x1,x2)" = menor,
+                        "x1" = melhor_ponto[1],
+                        "x2" = melhor_ponto[2])
+
+  return(melhor_resultado)
+}
+
+grad_desc2(1,1)
+grad_desc2(1,0)
+grad_desc2(x1 = -3, x2 = -3, lr = 0.1)
+
