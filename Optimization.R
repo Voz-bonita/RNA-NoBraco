@@ -88,11 +88,11 @@ grad_desc2 <- function(x1, x2, lr = 0.01, epochs = 10) {
   return(melhor_resultado)
 }
 
-grad_desc2(1,1)
-grad_desc2(1,0)
+grad_desc2(x1 = 1, x2 = 1)
+grad_desc2(x1 = 1, x2 = -1)
 grad_desc2(x1 = -3, x2 = -3, lr = 0.1)
 
 
 #### d)
 
-grad_desc2(0, 5, lr = 0.01, epochs = 100)
+grad_desc2(x1 = 0, x2 = 5, lr = 0.01, epochs = 100)
