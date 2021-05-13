@@ -1,5 +1,5 @@
 library(pacman)
-p_load(ggplot2, dplyr, latex2exp)
+p_load(ggplot2, dplyr, latex2exp, tibble, rlist, knitr)
 
 #### a)
 ## Funcao fornecida
@@ -60,8 +60,9 @@ grad_desc2 <- function(x1, x2, lr = 0.01, epochs = 10) {
   y0 <- fbase(x1,x2)
   menor <- y0
   melhor_ponto <- c(x1,x2)
+  melhor_epoch <- 0
 
-  for (i in 1:epochs) {
+  for (epoch in 1:epochs) {
     # Gradiente
     ddx1 <- 4*x1^3 + 2*x1*x2 + x2^2 - 40*x1
     ddx2 <- 4*x2^3 + 2*x1*x2 + x1^2 - 30*x2
@@ -78,12 +79,14 @@ grad_desc2 <- function(x1, x2, lr = 0.01, epochs = 10) {
     } else if (yi < menor) {
       menor <- yi
       melhor_ponto <- c(x1,x2)
+      melhor_epoch <- epoch
     }
   }
 
   melhor_resultado <- c("f(x1,x2)" = menor,
                         "x1" = melhor_ponto[1],
-                        "x2" = melhor_ponto[2])
+                        "x2" = melhor_ponto[2],
+                        "Epoch" = melhor_epoch)
 
   return(melhor_resultado)
 }
@@ -96,3 +99,19 @@ grad_desc2(x1 = -3, x2 = -3, lr = 0.1)
 #### d)
 
 grad_desc2(x1 = 0, x2 = 5, lr = 0.01, epochs = 100)
+
+
+#### e)
+
+### Potencias de 10
+rates <- 10^(0:-4)
+
+resultados <- list()
+for (lr in rates) {
+  resultados <- list.append(resultados, grad_desc2(x1 = 0, x2 = 5, lr = lr, epochs = 100))
+}
+
+names(resultados) <- as.character(rates)
+resultados <- as_tibble(resultados)
+
+resultados
