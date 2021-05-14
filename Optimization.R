@@ -53,7 +53,8 @@ grad_desc2 <- function(x1, x2, lr = 0.01, epochs = 10) {
   x2 <- as.double(x2)
 
   if (x1 == 0 & x2 == 0) {
-    warning("O ponto inicial (0,0) zera o gradiente\n  impossibilitando a descida de gradiente.")
+    warning(paste0("O ponto inicial (0,0) zera o gradiente\n",
+                   "impossibilitando a descida de gradiente."))
   }
 
   ## Valor inicial
@@ -108,7 +109,9 @@ rates <- 10^(0:-4)
 
 resultados <- list()
 for (lr in rates) {
-  resultados <- list.append(resultados, grad_desc2(x1 = 0, x2 = 5, lr = lr, epochs = 100))
+  resultados <- list.append(resultados,
+                            grad_desc2(x1 = 0, x2 = 5,
+                                       lr = lr, epochs = 100))
 }
 
 names(resultados) <- as.character(rates)
@@ -124,10 +127,11 @@ grad_desc_pathwise <- function(x1, x2, lr = 0.01, epochs = 10) {
   x2 <- as.double(x2)
 
   if (x1 == 0 & x2 == 0) {
-    warning("O ponto inicial (0,0) zera o gradiente\n  impossibilitando a descida de gradiente.")
+    warning(paste0("O ponto inicial (0,0) zera o gradiente\n",
+                   "impossibilitando a descida de gradiente."))
   }
 
-  # Guarda todo o caminho percorrido pela funcao
+  ## Guarda todo o caminho percorrido pela funcao
   caminho_df <- tibble(x1 = numeric(101),
          x2 = numeric(101),
          f = numeric(101))
@@ -155,15 +159,18 @@ grad_desc_pathwise <- function(x1, x2, lr = 0.01, epochs = 10) {
   return(caminho_df)
 }
 
+
 set.seed(123)
 
 ## Primeira linha apenas para identificar colunas
 caminhos <- tibble(x1 = 0, x2 = 0, Tentativa = 0)
 for (i in 1:20) {
-  ## x1 e x2
+  ## x1 e x2 uniformemente distribuidos em [-5,5]
   x <- runif(2, -5,5)
 
-  caminho_individual <- grad_desc_pathwise(x[1], x[2], lr = 0.01, epochs = 100)[1:2] %>%
+  caminho_individual <- grad_desc_pathwise(x[1], x[2],
+                                           lr = 0.01,
+                                           epochs = 100)[1:2] %>%
     add_column(Tentativa = rep(i,101))
 
   caminhos <- caminhos %>%
@@ -173,13 +180,8 @@ for (i in 1:20) {
 ## Remove a primeira linha artificial
 caminhos <- caminhos[2:nrow(caminhos),]
 
-
+## Garante que os caminhos são agrupaveis por tentativa
 caminhos$Tentativa <- as.factor(caminhos$Tentativa)
-
-library(RColorBrewer)
-# Define the number of colors you want
-nb.cols <- 20
-mycolors <- colorRampPalette(brewer.pal(8, "Set2"))(nb.cols)
 
 ggplot(fbase_df) +
   geom_contour_filled(aes(x=x1, y=x2, z=z),
@@ -188,12 +190,12 @@ ggplot(fbase_df) +
                                  group = Tentativa,
                                  color = Tentativa),
             size = 1.2) +
-  scale_color_manual(values = mycolors) +
   theme(panel.grid=element_blank(),
         panel.background=element_rect(fill = "transparent",colour = NA),
         panel.border=element_blank(),
         legend.position = "bottom") +
-  guides(fill=FALSE) +
+  guides(fill=FALSE,
+         color=guide_legend(nrow=2, byrow=TRUE)) +
   scale_x_continuous(breaks = seq(-5,5,5)) +
   scale_y_continuous(breaks = seq(-5,5,5)) +
   xlab(TeX("$X_1$")) + ylab(TeX("$X_2$"))
