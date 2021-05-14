@@ -115,3 +115,84 @@ names(resultados) <- as.character(rates)
 resultados <- as_tibble(resultados)
 
 resultados
+
+
+#### f)
+
+grad_desc_pathwise <- function(x1, x2, lr = 0.01, epochs = 10) {
+  x1 <- as.double(x1)
+  x2 <- as.double(x2)
+
+  if (x1 == 0 & x2 == 0) {
+    warning("O ponto inicial (0,0) zera o gradiente\n  impossibilitando a descida de gradiente.")
+  }
+
+  # Guarda todo o caminho percorrido pela funcao
+  caminho_df <- tibble(x1 = numeric(101),
+         x2 = numeric(101),
+         f = numeric(101))
+  caminho_df[1,] <- list(x1, x2, fbase(x1,x2))
+
+  for (epoch in 1:epochs) {
+    # Gradiente
+    ddx1 <- 4*x1^3 + 2*x1*x2 + x2^2 - 40*x1
+    ddx2 <- 4*x2^3 + 2*x1*x2 + x1^2 - 30*x2
+
+    # Atualizacao das variaveis
+    x1 <- x1 - lr*ddx1
+    x2 <- x2 - lr*ddx2
+
+    # Atualizacao do valor minimo
+    yi <- fbase(x1,x2)
+    if (is.nan(yi)) {
+      warning("A funcao divergiu e o treinamento foi interrompido")
+      break
+    } else{
+      caminho_df[(epoch+1),] <- list(x1,x2, yi)
+    }
+  }
+
+  return(caminho_df)
+}
+
+set.seed(123)
+
+## Primeira linha apenas para identificar colunas
+caminhos <- tibble(x1 = 0, x2 = 0, tentativa = 0)
+for (i in 1:20) {
+  ## x1 e x2
+  x <- sample(-5:5, size = 2, replace = TRUE)
+
+  caminho_individual <- grad_desc_pathwise(x[1], x[2], lr = 0.01, epochs = 100)[1:2] %>%
+    add_column(tentativa = rep(i,101))
+
+  caminhos <- caminhos %>%
+    add_row(caminho_individual)
+}
+
+## Remove a primeira linha artificial
+caminhos <- caminhos[2:nrow(caminhos),]
+
+
+caminhos$tentativa <- as.factor(caminhos$tentativa)
+
+library(RColorBrewer)
+# Define the number of colors you want
+nb.cols <- 20
+mycolors <- colorRampPalette(brewer.pal(8, "Set2"))(nb.cols)
+
+ggplot(fbase_df) +
+  geom_contour_filled(aes(x=x1, y=x2, z=z),
+                      breaks = seq(inf, sup, 30)) +
+  geom_line(data = caminhos, aes(x=x1, y=x2,
+                                 group = tentativa,
+                                 color = tentativa)) +
+  scale_color_manual(values = mycolors) +
+  theme(panel.grid=element_blank(),
+        panel.background=element_rect(fill = "transparent",colour = NA),
+        panel.border=element_blank(),
+        legend.position = "bottom") +
+  guides(fill=guide_legend(nrow=4, byrow=TRUE)) +
+  scale_x_continuous(breaks = seq(-5,5,5)) +
+  scale_y_continuous(breaks = seq(-5,5,5)) +
+  xlab(TeX("$X_1$")) + ylab(TeX("$X_2$"))
