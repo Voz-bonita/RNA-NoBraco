@@ -158,13 +158,13 @@ grad_desc_pathwise <- function(x1, x2, lr = 0.01, epochs = 10) {
 set.seed(123)
 
 ## Primeira linha apenas para identificar colunas
-caminhos <- tibble(x1 = 0, x2 = 0, tentativa = 0)
+caminhos <- tibble(x1 = 0, x2 = 0, Tentativa = 0)
 for (i in 1:20) {
   ## x1 e x2
-  x <- sample(-5:5, size = 2, replace = TRUE)
+  x <- runif(2, -5,5)
 
   caminho_individual <- grad_desc_pathwise(x[1], x[2], lr = 0.01, epochs = 100)[1:2] %>%
-    add_column(tentativa = rep(i,101))
+    add_column(Tentativa = rep(i,101))
 
   caminhos <- caminhos %>%
     add_row(caminho_individual)
@@ -174,7 +174,7 @@ for (i in 1:20) {
 caminhos <- caminhos[2:nrow(caminhos),]
 
 
-caminhos$tentativa <- as.factor(caminhos$tentativa)
+caminhos$Tentativa <- as.factor(caminhos$Tentativa)
 
 library(RColorBrewer)
 # Define the number of colors you want
@@ -185,14 +185,15 @@ ggplot(fbase_df) +
   geom_contour_filled(aes(x=x1, y=x2, z=z),
                       breaks = seq(inf, sup, 30)) +
   geom_line(data = caminhos, aes(x=x1, y=x2,
-                                 group = tentativa,
-                                 color = tentativa)) +
+                                 group = Tentativa,
+                                 color = Tentativa),
+            size = 1.2) +
   scale_color_manual(values = mycolors) +
   theme(panel.grid=element_blank(),
         panel.background=element_rect(fill = "transparent",colour = NA),
         panel.border=element_blank(),
         legend.position = "bottom") +
-  guides(fill=guide_legend(nrow=4, byrow=TRUE)) +
+  guides(fill=FALSE) +
   scale_x_continuous(breaks = seq(-5,5,5)) +
   scale_y_continuous(breaks = seq(-5,5,5)) +
   xlab(TeX("$X_1$")) + ylab(TeX("$X_2$"))
