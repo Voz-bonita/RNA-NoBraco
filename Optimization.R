@@ -367,3 +367,36 @@ Adam <- function(x, lr = 0.001, p1 = 0.9, p2 = 0.999, estabilizador = 10^(-8), e
 optim_adam <- Adam(x = c(0,5), lr = 0.001, p1 = 0.9, p2 = 0.999,
                       estabilizador = 10^(-8), epochs = 100)
 optim_adam[which(optim_adam$f == min(optim_adam$f)),]
+
+
+#### j)
+
+optim_SGD <- grad_desc_pathwise(x1 = 0, x2 = 5, lr = 0.01, epochs = 100)
+
+optim_SGD["epoch"] <- seq(0,100)
+optim_SGD["Metodo"] <- "SGD"
+optim_inercia["Metodo"] <- "SGD w/ momentum"
+optim_rms["Metodo"] <- "RMSprop"
+optim_adam["Metodo"] <- "Adam"
+
+all_optim <- add_row(optim_SGD, optim_inercia) %>%
+  add_row(optim_rms) %>%
+  add_row(optim_adam)
+
+
+ggplot(fbase_df) +
+  geom_contour_filled(aes(x=x1, y=x2, z=z),
+                      breaks = seq(inf, sup, 30)) +
+  geom_path(data = all_optim, aes(x=x1, y=x2,
+                                 group = Metodo,
+                                 color = Metodo),
+            size = 1.2) +
+  theme(panel.grid=element_blank(),
+        panel.background=element_rect(fill = "transparent",colour = NA),
+        panel.border=element_blank(),
+        legend.position = "bottom") +
+  guides(fill=FALSE,
+         color=guide_legend(nrow=2, byrow=TRUE)) +
+  scale_x_continuous(breaks = seq(-5,5,5)) +
+  scale_y_continuous(breaks = seq(-5,5,5)) +
+  xlab(TeX("$X_1$")) + ylab(TeX("$X_2$"))
