@@ -305,3 +305,65 @@ RMSprop <- function(x, lr = 0.01, decay = 0.1, estabilizador = 10^(-6), epochs =
 
 optim_rms <- RMSprop(x = c(0,5), lr = 0.001, decay = 0.9, estabilizador = 10^(-6), epochs = 100)
 optim_rms[which(optim_rms$f == min(optim_rms$f)),]
+
+
+#### i)
+
+Adam <- function(x, lr = 0.001, p1 = 0.9, p2 = 0.999, estabilizador = 10^(-8), epochs = 10) {
+  x <- as.vector(x)
+  x1 <- x[1]
+  x2 <- x[2]
+
+  if (x1 == 0 & x2 == 0) {
+    warning(paste0("O ponto inicial (0,0) zera o gradiente\n",
+                   "impossibilitando a descida de gradiente."))
+  }
+
+  ## Guarda todo o caminho percorrido pela funcao
+  caminho_df <- tibble(x1 = numeric(epochs+1),
+                       x2 = numeric(epochs+1),
+                       f = numeric(epochs+1),
+                       epoch = numeric(epochs+1))
+  caminho_df[1,] <- list(x1, x2, fbase(x1,x2), 0)
+
+  ## Momentos
+  s <- numeric(length(x))
+  r <- numeric(length(x))
+
+  for (epoch in 1:epochs) {
+    # Gradiente
+    ddx1 <- 4*x1^3 + 2*x1*x2 + x2^2 - 40*x1
+    ddx2 <- 4*x2^3 + 2*x1*x2 + x1^2 - 30*x2
+    grad <- c(ddx1, ddx2)
+
+    # Primeiro momento
+    s <- p1*s + (1-p1)*grad
+    shat <- s/(1 - p1^epoch)
+    # Segundo momento
+    r <- p2*r + (1-p2) * grad*grad
+    rhat <- r/(1 - p2^epoch)
+
+    # Variacao
+    delta.x <- -lr * shat/(sqrt(rhat) + estabilizador)
+
+    # Atualizacao das variaveis
+    x <- x + delta.x
+    x1 <- x[1]
+    x2 <- x[2]
+
+    # Atualizacao do valor minimo
+    yi <- fbase(x1,x2)
+    if (is.nan(yi)) {
+      warning("A funcao divergiu e o treinamento foi interrompido")
+      break
+    } else{
+      caminho_df[(epoch+1),] <- list(x1,x2, yi, epoch)
+    }
+  }
+
+  return(caminho_df)
+}
+
+optim_adam <- Adam(x = c(0,5), lr = 0.001, p1 = 0.9, p2 = 0.999,
+                      estabilizador = 10^(-8), epochs = 100)
+optim_adam[which(optim_adam$f == min(optim_adam$f)),]
