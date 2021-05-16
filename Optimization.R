@@ -199,3 +199,54 @@ ggplot(fbase_df) +
   scale_x_continuous(breaks = seq(-5,5,5)) +
   scale_y_continuous(breaks = seq(-5,5,5)) +
   xlab(TeX("$X_1$")) + ylab(TeX("$X_2$"))
+
+
+#### g)
+
+SGD_momentum <- function(x, vel, lr = 0.01, momentum = 0.1, epochs = 10) {
+  x <- as.vector(x)
+  x1 <- x[1]
+  x2 <- x[2]
+
+  if (x1 == 0 & x2 == 0) {
+    warning(paste0("O ponto inicial (0,0) zera o gradiente\n",
+                   "impossibilitando a descida de gradiente."))
+  }
+
+  ## Guarda todo o caminho percorrido pela funcao
+  caminho_df <- tibble(x1 = numeric(101),
+         x2 = numeric(101),
+         f = numeric(101),
+         epoch = numeric(101))
+  caminho_df[1,] <- list(x1, x2, fbase(x1,x2), 0)
+
+  for (epoch in 1:epochs) {
+    # Gradiente
+    ddx1 <- 4*x1^3 + 2*x1*x2 + x2^2 - 40*x1
+    ddx2 <- 4*x2^3 + 2*x1*x2 + x1^2 - 30*x2
+    grad <- c(ddx1, ddx2)
+
+    # Inercia
+    vel <- momentum*vel - lr*grad
+
+    # Atualizacao das variaveis
+    x <- x + vel
+    x1 <- x[1]
+    x2 <- x[2]
+
+    # Atualizacao do valor minimo
+    yi <- fbase(x1,x2)
+    if (is.nan(yi)) {
+      warning("A funcao divergiu e o treinamento foi interrompido")
+      break
+    } else{
+      caminho_df[(epoch+1),] <- list(x1,x2, yi, epoch)
+    }
+  }
+
+  return(caminho_df)
+}
+
+optim_inercia <- SGD_momentum(x = c(0,5), vel = c(0,0), lr = 0.01, momentum = 0.9, epochs = 100)
+optim_inercia[which(optim_inercia$f == min(optim_inercia$f)),]
+
