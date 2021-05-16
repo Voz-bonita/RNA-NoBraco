@@ -371,9 +371,12 @@ optim_adam[which(optim_adam$f == min(optim_adam$f)),]
 
 #### j)
 
+## Obtendo o caminho
 optim_SGD <- grad_desc_pathwise(x1 = 0, x2 = 5, lr = 0.01, epochs = 100)
-
+## Fazendo mais semelhante as outras otimizacoes
 optim_SGD["epoch"] <- seq(0,100)
+
+## Coluna de metodos para simplificar o grafico
 optim_SGD["Metodo"] <- "SGD"
 optim_inercia["Metodo"] <- "SGD w/ momentum"
 optim_rms["Metodo"] <- "RMSprop"
