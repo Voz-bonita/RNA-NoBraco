@@ -250,3 +250,58 @@ SGD_momentum <- function(x, vel, lr = 0.01, momentum = 0.1, epochs = 10) {
 optim_inercia <- SGD_momentum(x = c(0,5), vel = c(0,0), lr = 0.01, momentum = 0.9, epochs = 100)
 optim_inercia[which(optim_inercia$f == min(optim_inercia$f)),]
 
+
+#### h)
+
+RMSprop <- function(x, lr = 0.01, decay = 0.1, estabilizador = 10^(-6), epochs = 10) {
+  x <- as.vector(x)
+  x1 <- x[1]
+  x2 <- x[2]
+
+  if (x1 == 0 & x2 == 0) {
+    warning(paste0("O ponto inicial (0,0) zera o gradiente\n",
+                   "impossibilitando a descida de gradiente."))
+  }
+
+  ## Guarda todo o caminho percorrido pela funcao
+  caminho_df <- tibble(x1 = numeric(epochs+1),
+                       x2 = numeric(epochs+1),
+                       f = numeric(epochs+1),
+                       epoch = numeric(epochs+1))
+  caminho_df[1,] <- list(x1, x2, fbase(x1,x2), 0)
+
+  ## Acumulo
+  r <- numeric(length(x))
+
+  for (epoch in 1:epochs) {
+    # Gradiente
+    ddx1 <- 4*x1^3 + 2*x1*x2 + x2^2 - 40*x1
+    ddx2 <- 4*x2^3 + 2*x1*x2 + x1^2 - 30*x2
+    grad <- c(ddx1, ddx2)
+
+    # Atualizacao do Acumulo
+    r <- decay*r + (1-decay) * grad*grad
+
+    # Variacao
+    delta.x <- -lr/sqrt(estabilizador + r) * grad
+
+    # Atualizacao das variaveis
+    x <- x + delta.x
+    x1 <- x[1]
+    x2 <- x[2]
+
+    # Atualizacao do valor minimo
+    yi <- fbase(x1,x2)
+    if (is.nan(yi)) {
+      warning("A funcao divergiu e o treinamento foi interrompido")
+      break
+    } else{
+      caminho_df[(epoch+1),] <- list(x1,x2, yi, epoch)
+    }
+  }
+
+  return(caminho_df)
+}
+
+optim_rms <- RMSprop(x = c(0,5), lr = 0.001, decay = 0.9, estabilizador = 10^(-6), epochs = 100)
+optim_rms[which(optim_rms$f == min(optim_rms$f)),]
