@@ -186,7 +186,7 @@ caminhos$Tentativa <- as.factor(caminhos$Tentativa)
 ggplot(fbase_df) +
   geom_contour_filled(aes(x=x1, y=x2, z=z),
                       breaks = seq(inf, sup, 30)) +
-  geom_line(data = caminhos, aes(x=x1, y=x2,
+  geom_path(data = caminhos, aes(x=x1, y=x2,
                                  group = Tentativa,
                                  color = Tentativa),
             size = 1.2) +
